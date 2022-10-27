@@ -13,12 +13,10 @@ fs.readdir(srcOrigin, {withFileTypes: true},   (err, files) => {
     else {
       files.forEach(file => {
         if (!file.isDirectory() && path.extname(file.name).match('css')) {
-            //const stream = fs.createReadStream(path.join(srcOrigin, file.name));
-            //stream.on('data', chunk => /*data.push(chunk)*/ console.log(chunk));
             let url = path.join(srcOrigin, file.name)
             fs.readFile(url, 'utf8', function(err, data){
                 output.write(data);
-                console.log(data);
+                //console.log(data);
             })
         }
       })

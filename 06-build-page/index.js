@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const fsPromises = fs.promises;
 
 const src = path.join(__dirname, 'project-dist');
 const srcIndex = path.join(__dirname, 'project-dist', 'index.html');
@@ -7,7 +8,7 @@ const srcStyle = path.join(__dirname, 'project-dist', 'style.css');
 const srcOrigin = path.join(__dirname, 'styles');
 const srcAssets = path.join(__dirname, 'assets');
 const newAssets = path.join(__dirname, 'project-dist', 'assets');
-//срабатывает со створого раза 
+//срабатывает со второго раза 
 function makeCSS() {
     fs.mkdir(src, {recursive: true}, (err) => {
         if (err) {
@@ -38,7 +39,6 @@ function makeCSS() {
         })
         }
     });
-    
 }
 makeCSS();
 
@@ -59,11 +59,11 @@ makeCSS();
   });*/
 
 function makeAssets(directorySrc, newSrc){
-    fs.readdir(directorySrc, {withFileTypes: true}, (err, files) => {
+  fs.readdir(directorySrc, {withFileTypes: true}, (err, files) => {
         if (err)
           console.log(err);
         else {
-          files.forEach(el => {
+          files.forEach((el) => {
             if (el.isDirectory()) {
                 const nextSrc = path.join(newSrc, el.name);
                 const nextRead = path.join(directorySrc, el.name);
@@ -101,14 +101,14 @@ function makeHTML() {
             if (err)
             console.log(err);
             else {
-            files.forEach(file => {
+            files.forEach(async (file) => {
                 if (!file.isDirectory() && path.extname(file.name).match('html')) {
                     componentsName.push(file.name.toString())
                 }
             })
             }
 
-            componentsName.forEach(el => {
+            componentsName.forEach((el) => {
                 const srcComponent = path.join(srcComponents, el);
                 let temp = '';
                 const readComponent = fs.createReadStream(srcComponent, 'utf-8');
