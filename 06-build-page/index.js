@@ -8,28 +8,28 @@ const srcStyle = path.join(__dirname, 'project-dist', 'style.css');
 const srcOrigin = path.join(__dirname, 'styles');
 const srcAssets = path.join(__dirname, 'assets');
 const newAssets = path.join(__dirname, 'project-dist', 'assets');
-//срабатывает со второго раза 
-function makeCSS() {
-    fs.mkdir(src, {recursive: true}, (err) => {
+ 
+async function makeCSS() {
+    await fs.mkdir(src, {recursive: true}, (err) => {
         if (err) {
             return console.error(err);
         }
     });
-    fs.mkdir(srcAssets, {recursive: true}, (err) => {
+    await fs.mkdir(newAssets, {recursive: true}, (err) => {
         if (err) {
             return console.error(err);
         }
     });
 
-    fs.writeFile(srcStyle,'', err => {if (err) throw err});
+    await fs.writeFile(srcStyle,'', err => {if (err) throw err});
 
     const output = fs.createWriteStream(srcStyle);
 
-    fs.readdir(srcOrigin, {withFileTypes: true}, (err, files) => {
+    await fs.readdir(srcOrigin, {withFileTypes: true}, async (err, files) => {
         if (err)
         console.log(err);
         else {
-        files.forEach(file => {
+        await files.forEach(file => {
             if (!file.isDirectory() && path.extname(file.name).match('css')) {
                 let url = path.join(srcOrigin, file.name)
                 fs.readFile(url, 'utf8', function(err, data){
@@ -39,55 +39,39 @@ function makeCSS() {
         })
         }
     });
+
+    await makeAssets(srcAssets, newAssets);
 }
 makeCSS();
 
-
-
-/*fs.readdir(__dirname, {withFileTypes: true}, (err, directories) => {
-    if (err)
-      console.log(err);
-    else {
-      directories.forEach(el => {
-        if (el.isDirectory() && el.name.match('assets')) {
-            fs.copyFile(path.join(__dirname, el.name), path.join(src, el.name), (err) => {
-                if (err) return console.error(err)
-              })
-        }
-      })
-    }
-  });*/
-
-function makeAssets(directorySrc, newSrc){
-  fs.readdir(directorySrc, {withFileTypes: true}, (err, files) => {
+async function makeAssets(directorySrc, newSrc){
+    await fs.readdir(directorySrc, {withFileTypes: true}, async (err, files) => {
         if (err)
           console.log(err);
         else {
-          files.forEach((el) => {
+          await files.forEach(async (el) => {
             if (el.isDirectory()) {
                 const nextSrc = path.join(newSrc, el.name);
                 const nextRead = path.join(directorySrc, el.name);
-                fs.mkdir(nextSrc, {recursive: true}, (err) => {
+                await fs.mkdir(nextSrc, {recursive: true}, (err) => {
                     if (err) {
                         return console.error(err);
                     }
                 });
-                makeAssets(nextRead, nextSrc)
+                await makeAssets(nextRead, nextSrc)
             }
             else {
-                fs.copyFile(path.join(directorySrc, el.name), path.join(newSrc, el.name), (err) => {
+                await fs.copyFile(path.join(directorySrc, el.name), path.join(newSrc, el.name), (err) => {
                     if (err) return console.error(err)
                   })
             }
           })
         }
       });
+      makeHTML();
   }
 
-
-makeAssets(srcAssets, newAssets)
-
-function makeHTML() {
+async function makeHTML() {
     const srcComponents = path.join(__dirname, 'components');
     const srcTemplate = path.join(__dirname, 'template.html')
     const readTemplate = fs.createReadStream(srcTemplate, 'utf-8');
@@ -95,28 +79,28 @@ function makeHTML() {
     let componentsName = [];
 
     readTemplate.on('data', chunk => data += chunk);
-    readTemplate.on('end', () => {
+    await readTemplate.on('end', async () => {
 
-        fs.readdir(srcComponents, {withFileTypes: true}, (err, files) => {
+        await fs.readdir(srcComponents, {withFileTypes: true}, async (err, files) => {
             if (err)
             console.log(err);
             else {
-            files.forEach(async (file) => {
+            await files.forEach(async (file) => {
                 if (!file.isDirectory() && path.extname(file.name).match('html')) {
                     componentsName.push(file.name.toString())
                 }
             })
             }
 
-            componentsName.forEach((el) => {
+            await componentsName.forEach(async (el) => {
                 const srcComponent = path.join(srcComponents, el);
                 let temp = '';
                 const readComponent = fs.createReadStream(srcComponent, 'utf-8');
-                readComponent.on('data', chunk => temp += chunk)
-                readComponent.on('end', () => {
+                await readComponent.on('data', chunk => temp += chunk)
+                await readComponent.on('end', async () => {
                     let fileName = el.split('.')[0];
                     data = data.replace(`{{${fileName}}}`, temp);
-                    fs.writeFile(srcIndex, data, err => {if (err) throw err});
+                    await fs.writeFile(srcIndex, data, err => {if (err) throw err});
 
                 })
             
@@ -124,4 +108,3 @@ function makeHTML() {
             
     })});
 }
-makeHTML();
