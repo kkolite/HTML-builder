@@ -15,7 +15,7 @@ fs.readdir(src, {withFileTypes: true},   (err, files) => {
                 if (error) {
                   console.log(error);
                 }
-               console.log(file.name, ' - ', path.extname(file.name), ' - ', stats.size)
+               console.log(file.name, ' - ', path.extname(file.name), ' - ', stats.size, 'bytes')
             })
         }
       })
